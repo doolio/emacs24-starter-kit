@@ -87,13 +87,20 @@ be included in your user-specific-config file.
 ido-mode is like magic pixie dust!
 #+srcname: starter-kit-loves-ido-mode
 #+begin_src emacs-lisp 
-(when (> emacs-major-version 21)
-  (ido-mode t)
-  (setq ido-enable-prefix nil
-        ido-enable-flex-matching t
-        ido-create-new-buffer 'always
-        ido-use-filename-at-point t
-        ido-max-prospects 10))
+  (starter-kit-install-if-needed 'ido-ubiquitous)
+  (starter-kit-install-if-needed 'ido-vertical-mode)
+  (when (> emacs-major-version 21)
+    (ido-mode t)
+    (ido-everywhere 1)
+    (ido-ubiquitous-mode 1)
+    (ido-vertical-mode 1)
+    (setq ido-enable-prefix nil
+          ido-enable-flex-matching t
+          ido-create-new-buffer 'always
+          ido-use-filename-at-point 'guess
+          ido-max-prospects 10
+          ido-vertical-show-count t
+          ido-vertical-define-keys 'C-n-C-p-up-down-left-right))
 #+end_src
 
 ** Other, spell checking, tabs, imenu and a coding hook
