@@ -1,0 +1,213 @@
+#+TITLE: doolio's user-specific-config file
+#+OPTIONS: toc:nil num:nil ^:nil
+
+This is NOT part of the [[file:starter-kit.org][Emacs Starter Kit]]. However, it does load
+various starter kit files that are not loaded automatically by the
+default starter kit.
+
+* My configuration
+
+** Load additional starter-kit files
+ - Additional miscellaneous settings from [[file:starter-kit-misc-recommended.org][starter-kit-misc-recommended]].
+  #+begin_src emacs-lisp
+    (starter-kit-load "starter-kit-misc-recommended.org")
+  #+end_src
+
+- Some configuration for Org Mode from [[file:starter-kit-org.org][starter-kit-org]].
+  #+begin_src emacs-lisp
+    (starter-kit-load "starter-kit-org.org")
+  #+end_src
+
+- Some configuration for yasnippet from [[file:starter-kit-yasnippet.org][starter-kit-yasnippet]].
+  #+begin_src emacs-lisp
+    (starter-kit-load "starter-kit-yasnippet.org")
+  #+end_src
+
+** Maximize Frame
+#+srcname: doolio-emacs-config-maxmize
+#+begin_src emacs-lisp
+  ;; maximize the frame at startup
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+#+end_src
+
+** Color Theme
+Fabrice Niessen's leuven theme which is one of the built-in emacs
+themes.
+#+srcname: doolio-emacs-config-theme
+#+begin_src emacs-lisp
+  (load-theme 'leuven t)
+  ;; Fontify the whole line for headings (with a background color).
+  (setq org-fontify-whole-heading-line t)
+#+end_src
+
+** Mode Line
+Emacs Powerline and Diminish.
+#+srcname: doolio-emacs-config-modeline
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'powerline)
+  (powerline-default-theme)
+
+  ;; Diminish modeline clutter
+  (starter-kit-install-if-needed 'diminish)
+  (diminish 'wrap-region-mode)
+  (diminish 'yas/minor-mode)
+#+end_src
+
+** Cursor and scrolling
+#+srcname: doolio-emacs-config-cursor
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'beacon)
+  ;; Never lose your cursor again.
+  (beacon-mode 1)
+  ;; Keep cursor at same position when scrolling
+  (setq scroll-preserve-screen-position 1)
+  ;; Scroll window up/down by one line
+  (global-set-key (kbd "M-n") (kbd "C-u 1 C-v"))
+  (global-set-key (kbd "M-p") (kbd "C-u 1 M-v"))
+#+end_src
+
+** smex
+Smex is a M-x enhancement. Built on top of Ido, it provides
+a convenient interface to your recently and most frequently used
+commands. And to all the other commands, too.
+#+srcname: doolio-emacs-config-smex
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'smex)
+  ;; smex keybindings
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+#+end_src
+
+** smartparens
+Smartparens is minor mode for Emacs that deals with parens pairs and
+tries to be smart about it.
+#+srcname: doolio-emacs-config-smartparens
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'smartparens)
+  (smartparens-global-mode t)
+  (show-smartparens-global-mode t)
+#+end_src
+
+** flycheck
+#+srcname: doolio-emacs-config-flycheck
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'flycheck)
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+#+end_src
+
+** Python Environment
+*** elpy
+Elpy is the Emacs Python Development Environment. This most follows
+the setup described [[https://realpython.com/blog/python/emacs-the-best-python-editor/][here]].
+#+srcname: doolio-emacs-config-elpy
+#+begin_src emacs-lisp
+  ;; add the elpy respository
+  (add-to-list 'package-archives
+               '("elpy" . "http://jorgenschaefer.github.io/packages/"))
+
+  (starter-kit-install-if-needed 'elpy 'ipython)
+  ;; enable elpy and use ipython (must be installed)
+  (elpy-enable)
+  (elpy-use-ipython)
+  ;; use flycheck not flymake with elpy
+  (when (require 'flycheck nil t)
+    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+    (add-hook 'elpy-mode-hook 'flycheck-mode))
+#+end_src
+
+*** ob-ipython
+An Emacs library that allows Org mode to evaluate Python code blocks
+using an IPython kernel.
+
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'ob-ipython)
+  ;; display/update images in the buffer after one evaluates
+  (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
+#+end_src
+
+*** PEP8 formatting
+
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'py-autopep8)
+  ;; enable autoppe8 formatting on save
+  (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+#+end_src
+
+** ibuffer-vc
+#+srcname: doolio-emacs-config-ibuffer-vc
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'ibuffer-vc)
+  ;; Let Emacs' ibuffer-mode group files by git project etc., and show file state
+  (add-hook 'ibuffer-hook
+            (lambda ()
+              (ibuffer-vc-set-filter-groups-by-vc-root)
+              (unless (eq ibuffer-sorting-mode 'alphabetic)
+                (ibuffer-do-sort-by-alphabetic))))
+
+  (setq ibuffer-formats
+        '((mark modified read-only vc-status-mini " "
+                (name 18 18 :left :elide)
+                " "
+                (size 9 -1 :right)
+                " "
+                (mode 16 16 :left :elide)
+                " "
+                (vc-status 16 16 :left)
+                " "
+                filename-and-process)))
+#+end_src
+
+** Configure scratch buffer
+#+srcname: doolio-emacs-config-scratch
+#+begin_src emacs-lisp
+  ;; no default message in scratch buffer
+  (setq initial-scratch-message nil)
+  (starter-kit-install-if-needed 'scratch)
+  ;; launch a scratch buffer (M-x scratch) for the current major mode
+  (autoload 'scratch "scratch" nil t)
+#+end_src
+
+** Full width comment box
+#+begin_src emacs-lisp
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Full width comment box                                                 ;;
+  ;; from http://irreal.org/blog/?p=374                                     ;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (defun doolio-comment-box (b e)
+  "Draw a box comment around the region but arrange for the region
+  to extend to at least the fill column. Place the point after the
+  comment box."
+  (interactive "r")
+
+  (let ((e (copy-marker e t)))
+    (goto-char b)
+    (end-of-line)
+    (insert-char ?  (- fill-column (current-column)))
+    (comment-box b e 1)
+    (goto-char e)
+    (set-marker e nil)))
+
+  ;; Globally map C-c b b to enter a comment box around a region
+  (global-set-key (kbd "C-c b b") 'doolio-comment-box)
+#+end_src
+
+** Copy/Kill, Paste/Yank to/from clipboard
+#+begin_src emacs-lisp
+  (setq x-select-enable-clipboard t)
+#+end_src
+
+** Multiple Cursors
+Some keybindings to work with multiple cursors.
+#+srcname: doolio-emacs-config-multiple-cursors
+#+begin_src emacs-lisp
+  (starter-kit-install-if-needed 'multiple-cursors)
+  ;; When you have an active region that spans multiple lines, the
+  ;; following will add a cursor to each line
+  (global-set-key (kbd "C-c m c") 'mc/edit-lines)
+  ;; When you want to add multiple cursors not based on continuous
+  ;; lines, but based on keywords in the buffer, use:
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+#+end_src
+
